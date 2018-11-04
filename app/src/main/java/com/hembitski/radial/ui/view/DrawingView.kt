@@ -11,10 +11,6 @@ import com.hembitski.radial.data.drawing.Line
 
 class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
-    companion object {
-        private const val UNDEFINED_FLOAT = -1f
-    }
-
     var listener: Listener = DefaultListener()
 
     private var bitmap: Bitmap? = null
@@ -53,7 +49,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
             when (it.action) {
                 MotionEvent.ACTION_DOWN -> onActionDown(it)
                 MotionEvent.ACTION_MOVE -> onActionMove(it)
-                MotionEvent.ACTION_UP -> onActionUp(it)
+                MotionEvent.ACTION_UP -> onActionUp()
                 else -> {
                 }
             }
@@ -78,7 +74,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         line.y1 = event.y
     }
 
-    private fun onActionUp(event: MotionEvent) {
+    private fun onActionUp() {
         listener.onNewDrawingItem(DrawingItem(path))
     }
 
