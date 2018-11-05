@@ -58,6 +58,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     }
 
     private fun onActionDown(event: MotionEvent) {
+        listener.onStartTouching()
         path = Path()
         line.x1 = event.x
         line.y1 = event.y
@@ -75,6 +76,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     }
 
     private fun onActionUp() {
+        listener.onEndTouching()
         listener.onNewDrawingItem(DrawingItem(path))
     }
 
@@ -93,10 +95,22 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
     interface Listener {
         fun onNewDrawingItem(item: DrawingItem)
+
+        fun onStartTouching()
+
+        fun onEndTouching()
     }
 
     private class DefaultListener : Listener {
         override fun onNewDrawingItem(item: DrawingItem) {
+            throwException()
+        }
+
+        override fun onStartTouching() {
+            throwException()
+        }
+
+        override fun onEndTouching() {
             throwException()
         }
 

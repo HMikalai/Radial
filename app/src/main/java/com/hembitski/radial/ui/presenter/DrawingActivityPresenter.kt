@@ -12,7 +12,7 @@ class DrawingActivityPresenter(private val listener: Listener) {
     }
 
     fun onHistoryBack() {
-        if (!history.isEmpty() && numberOfItemsShown - 1 >= 0) {
+        if (numberOfItemsShown - 1 >= 0) {
             numberOfItemsShown--
             val list = history.subList(0, numberOfItemsShown)
             listener.drawHistory(list)
@@ -38,6 +38,18 @@ class DrawingActivityPresenter(private val listener: Listener) {
         checkAvailabilityOfHistoryButtons()
     }
 
+    fun showDrawingSettings() {
+        listener.showDrawingSettings()
+    }
+
+    fun onStartTouching() {
+        listener.hideToolbar()
+    }
+
+    fun onEndTouching() {
+        listener.showToolbar()
+    }
+
     private fun checkAvailabilityOfHistoryButtons() {
         val back = numberOfItemsShown - 1 >= 0
         val forward = numberOfItemsShown + 1 <= history.size
@@ -45,8 +57,14 @@ class DrawingActivityPresenter(private val listener: Listener) {
     }
 
     interface Listener {
+        fun showToolbar()
+
+        fun hideToolbar()
+
         fun drawHistory(history: List<DrawingItem>)
 
         fun enableHistoryButton(back: Boolean, forward: Boolean)
+
+        fun showDrawingSettings()
     }
 }
