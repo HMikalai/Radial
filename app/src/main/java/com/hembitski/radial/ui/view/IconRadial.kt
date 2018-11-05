@@ -64,7 +64,7 @@ class IconRadial(context: Context, attrs: AttributeSet) : View(context, attrs) {
         cy = h / 2
         radius = (size / 2 - STROKE_WIDTH).toInt()
 
-        paint.color = Color.RED
+        paint.color = Color.WHITE
         paint.strokeWidth = STROKE_WIDTH
         paint.style = Paint.Style.STROKE
         paint.strokeCap = Paint.Cap.ROUND
