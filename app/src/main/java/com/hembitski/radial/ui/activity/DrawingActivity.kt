@@ -3,7 +3,7 @@ package com.hembitski.radial.ui.activity
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.hembitski.radial.R
-import com.hembitski.radial.data.drawing.DrawingItem
+import com.hembitski.radial.data.history.DrawingItem
 import com.hembitski.radial.ui.presenter.DrawingActivityPresenter
 import com.hembitski.radial.ui.view.DrawingView
 import kotlinx.android.synthetic.main.activity_main.*

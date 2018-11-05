@@ -1,4 +1,4 @@
-package com.hembitski.radial.data.drawing
+package com.hembitski.radial.data.history
 
 import android.graphics.Path
 

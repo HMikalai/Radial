@@ -1,6 +1,6 @@
 package com.hembitski.radial.ui.presenter
 
-import com.hembitski.radial.data.drawing.DrawingItem
+import com.hembitski.radial.data.history.DrawingItem
 
 class DrawingActivityPresenter(private val listener: Listener) {
 

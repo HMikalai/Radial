@@ -6,7 +6,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import com.hembitski.radial.data.drawing.DrawingItem
+import com.hembitski.radial.data.history.DrawingItem
 import com.hembitski.radial.data.drawing.Line
 
 class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) {
