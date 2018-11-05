@@ -66,5 +66,7 @@ class DrawingActivityPresenter(private val listener: Listener) {
         fun enableHistoryButton(back: Boolean, forward: Boolean)
 
         fun showDrawingSettings()
+
+        fun hideDrawingSettings()
     }
 }

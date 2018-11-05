@@ -5,11 +5,16 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import com.hembitski.radial.R
 import com.hembitski.radial.data.history.DrawingItem
+import com.hembitski.radial.ui.fragment.DrawingSettingFragment
 import com.hembitski.radial.ui.presenter.DrawingActivityPresenter
 import com.hembitski.radial.ui.view.DrawingView
 import kotlinx.android.synthetic.main.activity_main.*
 
 class DrawingActivity : AppCompatActivity() {
+
+    companion object {
+        private const val TAG_DRAWING_SETTINGS_FRAGMENT = "TAG_DRAWING_SETTINGS_FRAGMENT"
+    }
 
     private val presenter = DrawingActivityPresenter(DrawingActivityPresenterListener())
 
@@ -26,6 +31,24 @@ class DrawingActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         presenter.onResume()
+    }
+
+    override fun onBackPressed() {
+//        super.onBackPressed()
+        setDrawingSettingFragmentVisibility(false)
+    }
+
+    private fun setDrawingSettingFragmentVisibility(visible: Boolean) {
+        val fragment = supportFragmentManager.findFragmentByTag(TAG_DRAWING_SETTINGS_FRAGMENT)
+                ?: DrawingSettingFragment()
+        val ft = supportFragmentManager.beginTransaction()
+        ft.setCustomAnimations(R.anim.show_fragment_animation, R.anim.hide_fagment_animation)
+        if (visible) {
+            ft.replace(R.id.fragmentContainer, fragment, TAG_DRAWING_SETTINGS_FRAGMENT)
+        } else {
+            ft.remove(fragment)
+        }
+        ft.commit()
     }
 
     private inner class DrawingViewListener : DrawingView.Listener {
@@ -71,7 +94,11 @@ class DrawingActivity : AppCompatActivity() {
         }
 
         override fun showDrawingSettings() {
+            setDrawingSettingFragmentVisibility(true)
+        }
 
+        override fun hideDrawingSettings() {
+            setDrawingSettingFragmentVisibility(false)
         }
     }
 }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sittingsFragmentBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <com.hembitski.radial.ui.view.IconRadial
+        android:id="@+id/iconNumberOfSectors"
+        android:layout_width="@dimen/drawingSettingIconSize"
+        android:layout_height="@dimen/drawingSettingIconSize"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toStartOf="@id/seekBarNumberOfSectors"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <SeekBar
+        android:id="@+id/seekBarNumberOfSectors"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/drawingSettingIconSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/iconNumberOfSectors"
+        app:layout_constraintTop_toTopOf="@id/iconNumberOfSectors" />
+
+</android.support.constraint.ConstraintLayout>
