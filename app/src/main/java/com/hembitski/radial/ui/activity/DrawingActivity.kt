@@ -4,13 +4,14 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import com.hembitski.radial.R
+import com.hembitski.radial.data.drawing.settings.DrawingSettings
 import com.hembitski.radial.data.history.DrawingItem
 import com.hembitski.radial.ui.fragment.DrawingSettingFragment
 import com.hembitski.radial.ui.presenter.DrawingActivityPresenter
 import com.hembitski.radial.ui.view.DrawingView
 import kotlinx.android.synthetic.main.activity_main.*
 
-class DrawingActivity : AppCompatActivity() {
+class DrawingActivity : AppCompatActivity(), DrawingSettingFragment.Listener {
 
     companion object {
         private const val TAG_DRAWING_SETTINGS_FRAGMENT = "TAG_DRAWING_SETTINGS_FRAGMENT"
@@ -33,14 +34,17 @@ class DrawingActivity : AppCompatActivity() {
         presenter.onResume()
     }
 
-    override fun onBackPressed() {
-//        super.onBackPressed()
+    override fun applyDrawingSettings(settings: DrawingSettings) {
+        drawingView.settings = settings
+    }
+
+    override fun hideSettingsFragment() {
         setDrawingSettingFragmentVisibility(false)
     }
 
     private fun setDrawingSettingFragmentVisibility(visible: Boolean) {
         val fragment = supportFragmentManager.findFragmentByTag(TAG_DRAWING_SETTINGS_FRAGMENT)
-                ?: DrawingSettingFragment()
+                ?: DrawingSettingFragment.newInstance(drawingView.settings)
         val ft = supportFragmentManager.beginTransaction()
         ft.setCustomAnimations(R.anim.show_fragment_animation, R.anim.hide_fagment_animation)
         if (visible) {

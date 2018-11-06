@@ -14,10 +14,15 @@ class IconRadial(context: Context, attrs: AttributeSet) : View(context, attrs) {
     companion object {
         private const val DEGREE_IN_CIRCLE = 360.0
         private const val STROKE_WIDTH = 10f
+        private const val STROKE_WIDTH_FOR_BIG_VALUE = 3f
         private const val TEXT_SIZE_COEFF = 0.55f
     }
 
-    private val defValue = 7
+    var defValue = 7
+        set(value) {
+            field = value
+            setNumberOfSectors(value)
+        }
 
     private var cx = 0
     private var cy = 0
@@ -43,7 +48,7 @@ class IconRadial(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     override fun onDraw(canvas: Canvas?) {
         canvas?.let {
-//            it.drawColor(Color.WHITE)
+            //            it.drawColor(Color.WHITE)
 //            it.drawCircle(cx.toFloat(), cy.toFloat(), radius.toFloat(), paint)
             for (line in lines) {
                 it.drawLine(line.x1, line.y1, line.x2, line.y2, paint)
@@ -52,7 +57,9 @@ class IconRadial(context: Context, attrs: AttributeSet) : View(context, attrs) {
         }
     }
 
-    fun setNumberOfRepetitions(number: Int) {
+    fun setNumberOfSectors(number: Int) {
+        val width = (100 - number) / 10f
+        paint.strokeWidth = if(width > 1) width else 1f
         createLinesList(number)
         calculateCoordinatesOfText(number)
         invalidate()
@@ -75,13 +82,12 @@ class IconRadial(context: Context, attrs: AttributeSet) : View(context, attrs) {
     }
 
     private fun createLinesList(number: Int) {
-        if (number <= 0) {
-            return
-        }
-        lines.clear()
-        val angleBetweenLines = DEGREE_IN_CIRCLE / number
-        for (i in 0 until number) {
-            lines.add(getLine(cx.toFloat(), cy.toFloat(), radius.toFloat(), angleBetweenLines * i))
+        if (number > 0) {
+            lines.clear()
+            val angleBetweenLines = DEGREE_IN_CIRCLE / number
+            for (i in 0 until number) {
+                lines.add(getLine(cx.toFloat(), cy.toFloat(), radius.toFloat(), angleBetweenLines * i))
+            }
         }
     }
 
@@ -99,13 +105,12 @@ class IconRadial(context: Context, attrs: AttributeSet) : View(context, attrs) {
     }
 
     private fun calculateCoordinatesOfText(number: Int) {
-        if (number <= 0) {
-            return
+        if (number > 0) {
+            text = "" + number
+            val textBounds = Rect()
+            textPaint.getTextBounds(text, 0, text.length, textBounds)
+            textX = cx - textBounds.width().toFloat() / 2
+            textY = cy + textBounds.height().toFloat() / 2
         }
-        text = "" + number
-        val textBounds = Rect()
-        textPaint.getTextBounds(text, 0, text.length, textBounds)
-        textX = cx - textBounds.width().toFloat() / 2
-        textY = cy + textBounds.height().toFloat() / 2
     }
 }

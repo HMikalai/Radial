@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/sittingsFragmentBackground"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp">
 
     <com.hembitski.radial.ui.view.IconRadial
         android:id="@+id/iconNumberOfSectors"
@@ -40,5 +43,64 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/iconNumberOfSectors"
         app:layout_constraintTop_toTopOf="@id/iconBrushDiameter" />
+
+    <FrameLayout
+        android:id="@+id/colorLayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/drawingSettingIconSize"
+        android:layout_marginTop="10dp"
+        android:background="#009efa"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iconBrushDiameter" />
+
+    <ImageView
+        android:id="@+id/iconSmooth"
+        android:layout_width="@dimen/drawingSettingIconSize"
+        android:layout_height="@dimen/drawingSettingIconSize"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toStartOf="@id/switchSmooth"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/colorLayout"
+        tools:ignore="ContentDescription"
+        tools:srcCompat="@drawable/ic_launcher_foreground" />
+
+    <Switch
+        android:id="@+id/switchSmooth"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/drawingSettingIconSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iconSmooth"
+        app:layout_constraintTop_toTopOf="@id/iconSmooth" />
+
+    <ImageView
+        android:id="@+id/iconMirrorDrawing"
+        android:layout_width="@dimen/drawingSettingIconSize"
+        android:layout_height="@dimen/drawingSettingIconSize"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toStartOf="@id/switchMirrorDrawing"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iconSmooth"
+        tools:ignore="ContentDescription"
+        tools:srcCompat="@drawable/ic_launcher_foreground" />
+
+    <Switch
+        android:id="@+id/switchMirrorDrawing"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/drawingSettingIconSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iconMirrorDrawing"
+        app:layout_constraintTop_toTopOf="@id/iconMirrorDrawing" />
+
+    <Button
+        android:id="@+id/apply"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ok"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.View
 import com.hembitski.radial.data.drawing.Line
 import com.hembitski.radial.data.drawing.Point
+import com.hembitski.radial.data.drawing.settings.DrawingSettings
 import com.hembitski.radial.data.history.DrawingItem
 import com.hembitski.radial.util.calculatePointOfSmoothShift
 import com.hembitski.radial.util.getDistanceBetweenPoints
@@ -18,6 +19,12 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         private const val SHIFT_SMOOTH_ACTION = 200f
     }
 
+    var settings = DrawingSettings(16, 10f, Color.BLUE, false, true)
+        set(value) {
+            field = value
+            initPaints()
+        }
+
     var listener: Listener = DefaultListener()
 
     private var bitmap: Bitmap? = null
@@ -26,8 +33,6 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private val line = Line()
     private val paint = Paint()
     private var path = Path()
-
-    private var smooth = true // true for smooth drawing
     private var tmpSmoothX = 0f
     private var tmpSmoothY = 0f
     private val point = Point()
@@ -35,10 +40,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private var needToSaveDrawingItem = false
 
     init {
-        paint.color = Color.BLUE
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 5f
-        paint.isAntiAlias = true
+        initPaints()
     }
 
     fun drawHistory(history: List<DrawingItem>) {
@@ -82,7 +84,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     }
 
     private fun onActionMove(event: MotionEvent) {
-        if (smooth) {
+        if (settings.smooth) {
             if (getDistanceBetweenPoints(line.x1, line.y1, event.x, event.y) > SHIFT_SMOOTH_ACTION) {
                 val distance = getDistanceBetweenPoints(tmpSmoothX, tmpSmoothY, event.x, event.y)
                 calculatePointOfSmoothShift(line.x1, line.y1, event.x, event.y, distance, point)
@@ -127,6 +129,14 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private fun createNewBitmap(width: Int, height: Int) {
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         canvas = Canvas(bitmap)
+    }
+
+    private fun initPaints() {
+        paint.color = settings.color
+        paint.strokeWidth = settings.brushDiameter
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.isAntiAlias = true
     }
 
     interface Listener {
