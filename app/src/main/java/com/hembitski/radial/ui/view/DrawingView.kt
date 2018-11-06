@@ -6,10 +6,17 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import com.hembitski.radial.data.history.DrawingItem
 import com.hembitski.radial.data.drawing.Line
+import com.hembitski.radial.data.drawing.Point
+import com.hembitski.radial.data.history.DrawingItem
+import com.hembitski.radial.util.calculatePointOfSmoothShift
+import com.hembitski.radial.util.getDistanceBetweenPoints
 
 class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) {
+
+    companion object {
+        private const val SHIFT_SMOOTH_ACTION = 200f
+    }
 
     var listener: Listener = DefaultListener()
 
@@ -20,10 +27,18 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private val paint = Paint()
     private var path = Path()
 
+    private var smooth = true // true for smooth drawing
+    private var tmpSmoothX = 0f
+    private var tmpSmoothY = 0f
+    private val point = Point()
+
+    private var needToSaveDrawingItem = false
+
     init {
         paint.color = Color.BLUE
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = 5f
+        paint.isAntiAlias = true
     }
 
     fun drawHistory(history: List<DrawingItem>) {
@@ -58,6 +73,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     }
 
     private fun onActionDown(event: MotionEvent) {
+        needToSaveDrawingItem = false
         listener.onStartTouching()
         path = Path()
         line.x1 = event.x
@@ -66,18 +82,38 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     }
 
     private fun onActionMove(event: MotionEvent) {
-        path.lineTo(event.x, event.y)
-        line.x2 = event.x
-        line.y2 = event.y
-        preDrawLine()
-        invalidate()
-        line.x1 = event.x
-        line.y1 = event.y
+        if (smooth) {
+            if (getDistanceBetweenPoints(line.x1, line.y1, event.x, event.y) > SHIFT_SMOOTH_ACTION) {
+                val distance = getDistanceBetweenPoints(tmpSmoothX, tmpSmoothY, event.x, event.y)
+                calculatePointOfSmoothShift(line.x1, line.y1, event.x, event.y, distance, point)
+                path.lineTo(point.x, point.y)
+                line.x2 = point.x
+                line.y2 = point.y
+                preDrawLine()
+                invalidate()
+                line.x1 = point.x
+                line.y1 = point.y
+                needToSaveDrawingItem = true
+            }
+            tmpSmoothX = event.x
+            tmpSmoothY = event.y
+        } else {
+            path.lineTo(event.x, event.y)
+            line.x2 = event.x
+            line.y2 = event.y
+            preDrawLine()
+            invalidate()
+            line.x1 = event.x
+            line.y1 = event.y
+            needToSaveDrawingItem = true
+        }
     }
 
     private fun onActionUp() {
         listener.onEndTouching()
-        listener.onNewDrawingItem(DrawingItem(path))
+        if (needToSaveDrawingItem) {
+            listener.onNewDrawingItem(DrawingItem(path))
+        }
     }
 
     private fun preDrawLine() {
