@@ -57,7 +57,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     }
 
     override fun onDraw(canvas: Canvas?) {
-        canvas?.takeIf { bitmap != null }?.drawBitmap(bitmap, 0f, 0f, null)
+        canvas?.takeIf { bitmap != null }?.drawBitmap(bitmap!!, 0f, 0f, null)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -128,7 +128,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
     private fun createNewBitmap(width: Int, height: Int) {
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        canvas = Canvas(bitmap)
+        canvas = Canvas(bitmap!!)
     }
 
     private fun initPaints() {
