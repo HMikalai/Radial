@@ -6,7 +6,6 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import com.hembitski.radial.data.drawing.Line
 import com.hembitski.radial.data.drawing.Point
 import com.hembitski.radial.data.drawing.settings.DrawingSettings
 import com.hembitski.radial.data.history.DrawingItem
@@ -17,12 +16,15 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
     companion object {
         private const val SHIFT_SMOOTH_ACTION = 200f
+
+        private const val DEFAULT_NUMBER_OF_SECTORS = 7
+        private const val DEFAULT_BRUSH_DIAMETER = 50f
     }
 
-    var settings = DrawingSettings(16, 10f, Color.BLUE, false, true)
+    var settings = DrawingSettings(DEFAULT_NUMBER_OF_SECTORS, DEFAULT_BRUSH_DIAMETER, Color.BLUE, false, true)
         set(value) {
             field = value
-            initPaints()
+            createAndSetupDrawingItem()
         }
 
     var listener: Listener = DefaultListener()
@@ -30,29 +32,35 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private var bitmap: Bitmap? = null
     private var canvas: Canvas? = null
 
-    private val line = Line()
-    private val paint = Paint()
-    private var path = Path()
+    private var cx = 0f
+    private var cy = 0f
+    private var lastX = 0f
+    private var lastY = 0f
+    private var drawingItem = DrawingItem(createPathsList(DEFAULT_NUMBER_OF_SECTORS))
     private var tmpSmoothX = 0f
     private var tmpSmoothY = 0f
     private val point = Point()
 
     private var needToSaveDrawingItem = false
 
+    private var angleInDegree: Double = 0.0
+
     init {
-        initPaints()
+        createAndSetupDrawingItem()
     }
 
     fun drawHistory(history: List<DrawingItem>) {
         bitmap?.let { createNewBitmap(it.width, it.height) }
         for (item in history) {
-            preDrawDrawingItem(item)
+            preDraw(item)
         }
         invalidate()
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+        cx = w / 2f
+        cy = h / 2f
         createNewBitmap(w, h)
     }
 
@@ -77,36 +85,34 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private fun onActionDown(event: MotionEvent) {
         needToSaveDrawingItem = false
         listener.onStartTouching()
-        path = Path()
-        line.x1 = event.x
-        line.y1 = event.y
-        path.moveTo(event.x, event.y)
+        lastX = event.x
+        lastY = event.y
+        setPathsMoveTo(drawingItem, event.x, event.y)
+//        drawingItem.path.moveTo(event.x, event.y)
     }
 
     private fun onActionMove(event: MotionEvent) {
         if (settings.smooth) {
-            if (getDistanceBetweenPoints(line.x1, line.y1, event.x, event.y) > SHIFT_SMOOTH_ACTION) {
+            if (getDistanceBetweenPoints(lastX, lastY, event.x, event.y) > SHIFT_SMOOTH_ACTION) {
                 val distance = getDistanceBetweenPoints(tmpSmoothX, tmpSmoothY, event.x, event.y)
-                calculatePointOfSmoothShift(line.x1, line.y1, event.x, event.y, distance, point)
-                path.lineTo(point.x, point.y)
-                line.x2 = point.x
-                line.y2 = point.y
-                preDrawLine()
+                calculatePointOfSmoothShift(lastX, lastY, event.x, event.y, distance, point)
+                setPathsLineTo(drawingItem, point.x, point.y)
+//                drawingItem.path.lineTo(point.x, point.y)
+                preDraw(drawingItem)
                 invalidate()
-                line.x1 = point.x
-                line.y1 = point.y
+                lastX = point.x
+                lastY = point.y
                 needToSaveDrawingItem = true
             }
             tmpSmoothX = event.x
             tmpSmoothY = event.y
         } else {
-            path.lineTo(event.x, event.y)
-            line.x2 = event.x
-            line.y2 = event.y
-            preDrawLine()
+            setPathsLineTo(drawingItem, event.x, event.y)
+//            drawingItem.path.lineTo(event.x, event.y)
+            preDraw(drawingItem)
             invalidate()
-            line.x1 = event.x
-            line.y1 = event.y
+            lastX = event.x
+            lastY = event.y
             needToSaveDrawingItem = true
         }
     }
@@ -114,29 +120,84 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private fun onActionUp() {
         listener.onEndTouching()
         if (needToSaveDrawingItem) {
-            listener.onNewDrawingItem(DrawingItem(path))
+            listener.onNewDrawingItem(drawingItem)
+            createAndSetupDrawingItem()
         }
     }
 
-    private fun preDrawLine() {
-        canvas?.drawLine(line.x1, line.y1, line.x2, line.y2, paint)
+    private fun setPathsMoveTo(drawingItem: DrawingItem, x: Float, y: Float) {
+        drawingItem.paths[0].moveTo(x, y)
+        for (i in 1 until drawingItem.paths.size) {
+            calculateNextPoint(angleInDegree * i, x, y, drawingItem.paths[i], true)
+        }
     }
 
-    private fun preDrawDrawingItem(item: DrawingItem) {
-        canvas?.drawPath(item.path, paint)
+    private fun setPathsLineTo(drawingItem: DrawingItem, x: Float, y: Float) {
+        drawingItem.paths[0].lineTo(x, y)
+        for (i in 1 until drawingItem.paths.size) {
+            calculateNextPoint(angleInDegree * i, x, y, drawingItem.paths[i], false)
+        }
+    }
+
+    private fun calculateNextPoint(
+        angleInDegree: Double,
+        srcX: Float,
+        srcY: Float,
+        dstPath: Path,
+        moveTo: Boolean
+    ) {
+        val rx: Float = srcX - cx
+        val ry: Float = srcY - cy
+        val c: Float = Math.cos(Math.toRadians(angleInDegree)).toFloat()
+        val s: Float = Math.sin(Math.toRadians(angleInDegree)).toFloat()
+        val x = cx + rx * c - ry * s
+        val y = cy + rx * s + ry * c
+        if (moveTo) {
+            dstPath.moveTo(x, y)
+        } else {
+            dstPath.lineTo(x, y)
+        }
+    }
+
+    private fun preDraw(item: DrawingItem) {
+        for (p in item.paths) {
+            canvas?.drawPath(p, item.paint)
+        }
     }
 
     private fun createNewBitmap(width: Int, height: Int) {
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         canvas = Canvas(bitmap!!)
+        drawMarkingLines()
     }
 
-    private fun initPaints() {
-        paint.color = settings.color
-        paint.strokeWidth = settings.brushDiameter
+    private fun drawMarkingLines() {
+        val paint = Paint()
+        paint.color = Color.GRAY
         paint.style = Paint.Style.STROKE
-        paint.strokeCap = Paint.Cap.ROUND
-        paint.isAntiAlias = true
+        paint.strokeWidth = 3f
+        canvas?.let {
+            it.drawLine(it.width / 2f, 0f, it.width / 2f, it.height.toFloat(), paint)
+            it.drawLine(0f, it.height / 2f, it.width.toFloat(), it.height / 2f, paint)
+        }
+    }
+
+    private fun createAndSetupDrawingItem() {
+        drawingItem = DrawingItem(createPathsList(settings.numberOfSectors))
+        drawingItem.paint.color = settings.color
+        drawingItem.paint.strokeWidth = settings.brushDiameter
+        drawingItem.paint.style = Paint.Style.STROKE
+        drawingItem.paint.strokeCap = Paint.Cap.ROUND
+        drawingItem.paint.isAntiAlias = true
+    }
+
+    private fun createPathsList(size: Int): List<Path> {
+        val list: MutableList<Path> = ArrayList()
+        for (i in 1..size) {
+            list.add(Path())
+        }
+        angleInDegree = 360.0 / list.size
+        return list
     }
 
     interface Listener {
