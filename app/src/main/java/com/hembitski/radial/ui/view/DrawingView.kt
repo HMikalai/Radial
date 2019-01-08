@@ -18,10 +18,19 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         private const val SHIFT_SMOOTH_ACTION = 200f
 
         private const val DEFAULT_NUMBER_OF_SECTORS = 7
-        private const val DEFAULT_BRUSH_DIAMETER = 50f
+        private const val DEFAULT_BRUSH_DIAMETER = 3f
+        private const val DEFAULT_COLOR = Color.BLUE
+        private const val DEFAULT_SMOOTH = true
+        private const val DEFAULT_MIRROR_DRAWING = true
     }
 
-    var settings = DrawingSettings(DEFAULT_NUMBER_OF_SECTORS, DEFAULT_BRUSH_DIAMETER, Color.BLUE, false, true)
+    var settings = DrawingSettings(
+        DEFAULT_NUMBER_OF_SECTORS,
+        DEFAULT_BRUSH_DIAMETER,
+        DEFAULT_COLOR,
+        DEFAULT_SMOOTH,
+        DEFAULT_MIRROR_DRAWING
+    )
         set(value) {
             field = value
             createAndSetupDrawingItem()
@@ -88,7 +97,6 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         lastX = event.x
         lastY = event.y
         setPathsMoveTo(drawingItem, event.x, event.y)
-//        drawingItem.path.moveTo(event.x, event.y)
     }
 
     private fun onActionMove(event: MotionEvent) {
@@ -97,7 +105,6 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
                 val distance = getDistanceBetweenPoints(tmpSmoothX, tmpSmoothY, event.x, event.y)
                 calculatePointOfSmoothShift(lastX, lastY, event.x, event.y, distance, point)
                 setPathsLineTo(drawingItem, point.x, point.y)
-//                drawingItem.path.lineTo(point.x, point.y)
                 preDraw(drawingItem)
                 invalidate()
                 lastX = point.x
@@ -108,7 +115,6 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
             tmpSmoothY = event.y
         } else {
             setPathsLineTo(drawingItem, event.x, event.y)
-//            drawingItem.path.lineTo(event.x, event.y)
             preDraw(drawingItem)
             invalidate()
             lastX = event.x
