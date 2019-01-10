@@ -3,9 +3,11 @@ package com.hembitski.radial.ui.activity
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import android.widget.Toast
 import com.hembitski.radial.R
+import com.hembitski.radial.data.drawing.DrawingItem
+import com.hembitski.radial.data.drawing.HistoryDrawingItem
 import com.hembitski.radial.data.drawing.settings.DrawingSettings
-import com.hembitski.radial.data.history.DrawingItem
 import com.hembitski.radial.ui.fragment.DrawingSettingFragment
 import com.hembitski.radial.ui.presenter.DrawingActivityPresenter
 import com.hembitski.radial.ui.view.DrawingView
@@ -27,11 +29,18 @@ class DrawingActivity : AppCompatActivity(), DrawingSettingFragment.Listener {
         historyBack.setOnClickListener { presenter.onHistoryBack() }
         historyForward.setOnClickListener { presenter.onHistoryForward() }
         drawingSetting.setOnClickListener { presenter.showDrawingSettings() }
+        clearAll.setOnClickListener { presenter.clearAll() }
     }
 
     override fun onResume() {
         super.onResume()
         presenter.onResume()
+        drawingView.startCalculationThread()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        drawingView.stopCalculationThread()
     }
 
     override fun applyDrawingSettings(settings: DrawingSettings) {
@@ -56,7 +65,7 @@ class DrawingActivity : AppCompatActivity(), DrawingSettingFragment.Listener {
     }
 
     private inner class DrawingViewListener : DrawingView.Listener {
-        override fun onNewDrawingItem(item: DrawingItem) {
+        override fun onNewDrawingItem(item: HistoryDrawingItem) {
             presenter.addDrawingItemToHistory(item)
         }
 
@@ -66,6 +75,10 @@ class DrawingActivity : AppCompatActivity(), DrawingSettingFragment.Listener {
 
         override fun onEndTouching() {
             presenter.onEndTouching()
+        }
+
+        override fun onToFastDrawing() {
+            Toast.makeText(this@DrawingActivity, "To fast drawing", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -78,7 +91,7 @@ class DrawingActivity : AppCompatActivity(), DrawingSettingFragment.Listener {
             toolbar.visibility = View.INVISIBLE
         }
 
-        override fun drawHistory(history: List<DrawingItem>) {
+        override fun drawHistory(history: List<HistoryDrawingItem>) {
             drawingView.drawHistory(history)
         }
 
@@ -103,6 +116,10 @@ class DrawingActivity : AppCompatActivity(), DrawingSettingFragment.Listener {
 
         override fun hideDrawingSettings() {
             setDrawingSettingFragmentVisibility(false)
+        }
+
+        override fun clearAll() {
+            drawingView.clearAll()
         }
     }
 }

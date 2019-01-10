@@ -1,46 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/mainContainer"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.activity.DrawingActivity">
+             xmlns:tools="http://schemas.android.com/tools"
+             android:id="@+id/mainContainer"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context=".ui.activity.DrawingActivity">
 
     <com.hembitski.radial.ui.view.DrawingView
-        android:id="@+id/drawingView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+            android:id="@+id/drawingView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
     <LinearLayout
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/black">
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/black">
 
         <ImageView
-            android:id="@+id/historyBack"
-            android:layout_width="?attr/actionBarSize"
-            android:layout_height="?attr/actionBarSize"
-            tools:ignore="ContentDescription" />
+                android:id="@+id/historyBack"
+                android:layout_width="?attr/actionBarSize"
+                android:layout_height="?attr/actionBarSize"
+                tools:ignore="ContentDescription"/>
 
         <ImageView
-            android:id="@+id/historyForward"
-            android:layout_width="?attr/actionBarSize"
-            android:layout_height="?attr/actionBarSize"
-            tools:ignore="ContentDescription" />
+                android:id="@+id/historyForward"
+                android:layout_width="?attr/actionBarSize"
+                android:layout_height="?attr/actionBarSize"
+                tools:ignore="ContentDescription"/>
 
         <ImageView
-            android:id="@+id/drawingSetting"
-            android:layout_width="?attr/actionBarSize"
-            android:layout_height="?attr/actionBarSize"
-            android:src="@drawable/ic_brush"
-            tools:ignore="ContentDescription" />
+                android:id="@+id/drawingSetting"
+                android:layout_width="?attr/actionBarSize"
+                android:layout_height="?attr/actionBarSize"
+                android:src="@drawable/ic_brush"
+                tools:ignore="ContentDescription"/>
+
+        <ImageView
+                android:id="@+id/clearAll"
+                android:src="@android:drawable/ic_delete"
+                android:layout_width="?attr/actionBarSize"
+                android:layout_height="?attr/actionBarSize"
+                tools:ignore="ContentDescription"/>
 
     </LinearLayout>
 
     <FrameLayout
-        android:id="@+id/fragmentContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+            android:id="@+id/fragmentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
 </FrameLayout>

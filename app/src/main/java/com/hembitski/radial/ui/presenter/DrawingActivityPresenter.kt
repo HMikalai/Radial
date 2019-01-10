@@ -1,10 +1,10 @@
 package com.hembitski.radial.ui.presenter
 
-import com.hembitski.radial.data.history.DrawingItem
+import com.hembitski.radial.data.drawing.HistoryDrawingItem
 
 class DrawingActivityPresenter(private val listener: Listener) {
 
-    private var history: MutableList<DrawingItem> = ArrayList()
+    private var history: MutableList<HistoryDrawingItem> = ArrayList()
     private var numberOfItemsShown = history.size
 
     fun onResume() {
@@ -29,7 +29,7 @@ class DrawingActivityPresenter(private val listener: Listener) {
         checkAvailabilityOfHistoryButtons()
     }
 
-    fun addDrawingItemToHistory(item: DrawingItem) {
+    fun addDrawingItemToHistory(item: HistoryDrawingItem) {
         if (numberOfItemsShown != history.size) {
             history = history.subList(0, numberOfItemsShown)
         }
@@ -40,6 +40,13 @@ class DrawingActivityPresenter(private val listener: Listener) {
 
     fun showDrawingSettings() {
         listener.showDrawingSettings()
+    }
+
+    fun clearAll() {
+        history.clear()
+        numberOfItemsShown = history.size
+        checkAvailabilityOfHistoryButtons()
+        listener.clearAll()
     }
 
     fun onStartTouching() {
@@ -61,12 +68,14 @@ class DrawingActivityPresenter(private val listener: Listener) {
 
         fun hideToolbar()
 
-        fun drawHistory(history: List<DrawingItem>)
+        fun drawHistory(history: List<HistoryDrawingItem>)
 
         fun enableHistoryButton(back: Boolean, forward: Boolean)
 
         fun showDrawingSettings()
 
         fun hideDrawingSettings()
+
+        fun clearAll()
     }
 }
