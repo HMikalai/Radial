@@ -34,11 +34,11 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     }
 
     var settings = DrawingSettings(
-            DEFAULT_NUMBER_OF_SECTORS,
-            DEFAULT_BRUSH_DIAMETER,
-            DEFAULT_COLOR,
-            DEFAULT_SMOOTH,
-            DEFAULT_MIRROR_DRAWING
+        DEFAULT_NUMBER_OF_SECTORS,
+        DEFAULT_BRUSH_DIAMETER,
+        DEFAULT_COLOR,
+        DEFAULT_SMOOTH,
+        DEFAULT_MIRROR_DRAWING
     )
         set(value) {
             field = value
@@ -107,16 +107,16 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        event?.let {
-            when (it.action) {
-                MotionEvent.ACTION_DOWN -> calculationThreadHandler?.post { onActionDown(it) }
-                MotionEvent.ACTION_MOVE -> calculationThreadHandler?.post { onActionMove(it) }
-                MotionEvent.ACTION_UP -> calculationThreadHandler?.post { onActionUp() }
-                else -> {
-                }
-            }
-        }
+        event?.let { calculationThreadHandler?.post { handleTouchEvent(it) } }
         return true
+    }
+
+    private fun handleTouchEvent(event: MotionEvent) {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> onActionDown(event)
+            MotionEvent.ACTION_MOVE -> onActionMove(event)
+            MotionEvent.ACTION_UP -> onActionUp()
+        }
     }
 
     private fun onActionDown(event: MotionEvent) {
@@ -284,7 +284,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     }
 
     private class DrawingItemPool(val settings: DrawingSettings, val lineFactory: LineFactory) :
-            DrawingItemFactory {
+        DrawingItemFactory {
         override fun getDrawingItem() = createDrawingItem()
 
         private fun createDrawingItem(): DrawingItem {
