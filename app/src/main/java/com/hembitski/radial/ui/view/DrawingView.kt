@@ -10,7 +10,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.view.MotionEvent
-import android.view.View
+import android.view.SurfaceView
 import com.hembitski.radial.data.drawing.DrawingItem
 import com.hembitski.radial.data.drawing.HistoryDrawingItem
 import com.hembitski.radial.data.drawing.Line
@@ -20,7 +20,7 @@ import com.hembitski.radial.util.calculatePointOfSmoothShift
 import com.hembitski.radial.util.getDistanceBetweenPoints
 import java.util.*
 
-class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) {
+class DrawingView(context: Context, attrs: AttributeSet) : SurfaceView(context, attrs) {
 
     companion object {
         private const val SHIFT_SMOOTH_ACTION = 200f
@@ -29,7 +29,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         private const val DEFAULT_NUMBER_OF_SECTORS = 7
         private const val DEFAULT_BRUSH_DIAMETER = 3f
         private const val DEFAULT_COLOR = Color.BLUE
-        private const val DEFAULT_SMOOTH = true
+        private const val DEFAULT_SMOOTH = false
         private const val DEFAULT_MIRROR_DRAWING = true
     }
 
@@ -63,22 +63,31 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
     private val mainThreadHandler = Handler()
     private var calculationThreadHandler: Handler? = null
+    private var drawingThreadHandler: Handler? = null
     private val lineFactory: LineFactory = LinePool()
     private var drawingItemFactory: DrawingItemFactory = DrawingItemPool(settings, lineFactory)
 
     private var historyDrawingItem: HistoryDrawingItem? = null
 
-    fun startCalculationThread() {
-        Thread(Runnable {
+    fun startThreads() {
+        Thread {
             Looper.prepare()
             calculationThreadHandler = Handler()
             Looper.loop()
-        }).start()
+        }.start()
+        Thread {
+            Looper.prepare()
+            drawingThreadHandler = Handler()
+            Looper.loop()
+        }.start()
     }
 
-    fun stopCalculationThread() {
+    fun stopThreads() {
         calculationThreadHandler?.looper?.quit()
         calculationThreadHandler = null
+
+        drawingThreadHandler?.looper?.quit()
+        drawingThreadHandler = null
     }
 
     fun drawHistory(history: List<HistoryDrawingItem>) {
@@ -86,19 +95,19 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         for (item in history) {
             preDrawHistory(item)
         }
-        invalidate()
+        drawingThreadHandler?.post { draw() }
     }
 
     fun clearAll() {
         bitmap?.let { createNewBitmap(it.width, it.height) }
-        invalidate()
+        drawingThreadHandler?.post { draw() }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         cx = w / 2f
         cy = h / 2f
-        createNewBitmap(w, h)
+        Handler().postDelayed({ createNewBitmap(w, h) }, 1000)
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -131,25 +140,24 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private fun onActionMove(event: MotionEvent) {
         if (!isDrawing) return
 
+//        val drawDistance = getDistanceBetweenPoints(lastX, lastY, point.x, point.y)
+//        if (drawDistance >= MAX_SHIFT_DRAWING) {
+//            isDrawing = false
+//            onActionUp()
+//            mainThreadHandler.post { listener.onToFastDrawing() }
+//            return
+//        }
+
         if (settings.smooth) {
             if (getDistanceBetweenPoints(lastX, lastY, event.x, event.y) > SHIFT_SMOOTH_ACTION) {
                 val smoothDistance = getDistanceBetweenPoints(tmpSmoothX, tmpSmoothY, event.x, event.y)
                 calculatePointOfSmoothShift(lastX, lastY, event.x, event.y, smoothDistance, point)
-
-                val drawDistance = getDistanceBetweenPoints(lastX, lastY, point.x, point.y)
-                if (drawDistance >= MAX_SHIFT_DRAWING) {
-                    isDrawing = false
-                    onActionUp()
-                    mainThreadHandler.post { listener.onToFastDrawing() }
-                    return
-                }
-
                 val drawingItem = drawingItemFactory.getDrawingItem()
                 calculatePointsInCircle(drawingItem, lastX, lastY, point.x, point.y)
                 historyDrawingItem?.items?.add(drawingItem)
-                mainThreadHandler.post {
+                drawingThreadHandler?.post {
                     preDraw(drawingItem)
-                    invalidate()
+                    draw()
                 }
                 lastX = point.x
                 lastY = point.y
@@ -158,20 +166,12 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
             tmpSmoothX = event.x
             tmpSmoothY = event.y
         } else {
-            val drawDistance = getDistanceBetweenPoints(lastX, lastY, event.x, event.y)
-            if (drawDistance >= MAX_SHIFT_DRAWING) {
-                isDrawing = false
-                onActionUp()
-                mainThreadHandler.post { listener.onToFastDrawing() }
-                return
-            }
-
             val drawingItem = drawingItemFactory.getDrawingItem()
             calculatePointsInCircle(drawingItem, lastX, lastY, event.x, event.y)
             historyDrawingItem?.items?.add(drawingItem)
-            mainThreadHandler.post {
+            drawingThreadHandler?.post {
                 preDraw(drawingItem)
-                invalidate()
+                draw()
             }
             lastX = event.x
             lastY = event.y
@@ -208,6 +208,14 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
         }
     }
 
+    private fun draw() {
+        bitmap?.let {
+            val canvas = holder.lockCanvas()
+            canvas.drawBitmap(it, 0f, 0f, null)
+            holder.unlockCanvasAndPost(canvas)
+        }
+    }
+
     private fun preDraw(item: DrawingItem) {
         item.lines?.let {
             for (line in it) {
@@ -225,7 +233,9 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
     private fun createNewBitmap(width: Int, height: Int) {
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         canvas = Canvas(bitmap!!)
+        canvas?.drawColor(Color.WHITE)
         drawMarkingLines()
+        drawingThreadHandler?.post { draw() }
     }
 
     private fun drawMarkingLines() {

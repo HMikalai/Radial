@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
 import com.hembitski.radial.R
-import com.hembitski.radial.data.drawing.DrawingItem
 import com.hembitski.radial.data.drawing.HistoryDrawingItem
 import com.hembitski.radial.data.drawing.settings.DrawingSettings
 import com.hembitski.radial.ui.fragment.DrawingSettingFragment
@@ -35,12 +34,12 @@ class DrawingActivity : AppCompatActivity(), DrawingSettingFragment.Listener {
     override fun onResume() {
         super.onResume()
         presenter.onResume()
-        drawingView.startCalculationThread()
+        drawingView.startThreads()
     }
 
     override fun onPause() {
         super.onPause()
-        drawingView.stopCalculationThread()
+        drawingView.stopThreads()
     }
 
     override fun applyDrawingSettings(settings: DrawingSettings) {
